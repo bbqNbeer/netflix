@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Netflix App</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
+        <style>
+            .content{
+                
+            }
+            .content div.item{
+                padding:5px;
+                border-top:1px solid #333;
+                overflow:hidden;
+            }
+            .content div.item-info{
+                float:left;
+                width:70%;
+            }
+            .content div.item-info h2{
+                font-size:1em;
+                padding:0px;
+                margin:0px 0px 0px 10px;
+            }
+            .content .item .image{
+                float:left;
+            }
+            .content p{
+                margin-left:10px;
+                font-size:.9em;
+            }
+        </style>
+        <label>Movie title</label>
+        <input type="text" id="movie_search" />
+        <input type="hidden" id="search_results" />
+        <button>Search Movies</button>
+        <div class="content">
+
+        </div>
+        <script src="http://jsapi.netflix.com/us/api/js/api.js"></script>
+        <script>
+        (function($){
+
+
+            function GetItem(movieName){
+
+                    var query = "http://odata.netflix.com/Catalog" // netflix base url
+                    + "/Titles" // top-level resource
+                    + "?$filter=substringof('" + escape(movieName) + "',Name)"  // filter by movie name
+                    + "&$callback=callback" // jsonp request
+                    + "&$format=json"; // json request
+                    $.ajax({
+                      dataType: 'jsonp',
+                      url: query,
+                      jsonpCallback: "callback",
+                      success: callback
+                    });
+
+                function callback(result) {
+                    // unwrap result
+                    var movies = result["d"]["results"];
+                 
+                    // show movies in template
+                    //var showMovie = tmpl("movieTemplate");
+                    var html = "";
+                    for (var i = 0; i < 10; i++) {
+                        // flatten movie
+                        var movieName = movies[i].Name,
+                            movieImage = movies[i].BoxArt.SmallUrl === 'null' ? '' : movies[i].BoxArt.SmallUrl,
+                            movieCast = movies[i].Cast,
+                            movieSynopsis = movies[i].Synopsis,
+                            movieRating = movies[i].AverageRating,
+                            movieType = movies[i].Type,
+                            movieLength = typeof(movies[i].Runtime) === 'number' ? ' Length: ' + (movies[i].Runtime / 60) + ' min' : '',
+                            //movieLength = typeof(movies[i].Runtime);
+                            movieYear = movies[i].ReleaseYear;
+                        // render with template
+                        //html += showMovie(movies[i]);
+                        console.log(movieCast);
+                        var html = '<div class="item"><div class="image"><img src="' + movieImage + '" /></div><div class="item-info"><h2>';
+                            html += movieName + '</h2><p>' + movieSynopsis + '</p><p>Average Rating: ' + movieRating;
+                            html += ' Type: ' + movieType + movieLength + ' Release Year: ' + movieYear + ' </p></div></div>';
+                        $("div.content").append(html);
+                    }
+                    
+                }
+            }
+
+
+
+            $('button').bind('touchend click', function(){
+                var movieName = $('#movie_search').val();
+                $("div.content").html('');
+                GetMovieItem(movieName);
+                //console.log(movieName);
+            });
+
+            
+        })(jQuery);
+        </script>
+
+    </body>
+</html>
